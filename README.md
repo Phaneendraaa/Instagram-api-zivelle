@@ -6,7 +6,7 @@ Posts a Zivelle product to Instagram as a carousel, using the Instagram API with
 - `POST /api/post` with header `x-api-key: <POST_SECRET>` and JSON `{ "slug": "product-slug", "dryRun": true }`
   - `dryRun` returns the caption and image URLs without posting.
   - Refuses to post a product whose name already starts a recent caption (use `"force": true` to override).
-- `GET /api/health` with the same header. Confirms the token works.
+- `GET /api/health` (public). Confirms the token works; returns only the public username.
 
 ## Caption format
 1. Exact product name (as on the website)

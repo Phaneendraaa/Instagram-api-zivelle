@@ -1,12 +1,11 @@
-// GET /api/health  header: x-api-key = POST_SECRET. Checks that the Instagram token still works.
+// GET /api/health  Public. Reports only whether the token works and the (public) username; no secrets.
 import { whoAmI } from '../lib/instagram.js';
 
 export default async function handler(req, res) {
-  if (!process.env.POST_SECRET || req.headers['x-api-key'] !== process.env.POST_SECRET) return res.status(401).json({ error: 'Unauthorized' });
   try {
     const me = await whoAmI(process.env.IG_ACCESS_TOKEN);
-    res.json({ ok: true, username: me.username, accountType: me.account_type, userIdMatches: String(me.user_id) === String(process.env.IG_USER_ID) });
+    res.json({ ok: true, username: me.username, accountType: me.account_type, userIdMatches: String(me.user_id) === String(process.env.IG_USER_ID), postSecretSet: Boolean(process.env.POST_SECRET) });
   } catch (e) {
-    res.status(502).json({ ok: false, error: e.message });
+    res.status(502).json({ ok: false, error: 'Instagram token check failed' });
   }
 }
