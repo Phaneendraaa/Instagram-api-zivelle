@@ -4,6 +4,16 @@
   "private": true,
   "type": "module",
   "description": "Posts Zivelle products to Instagram as carousels (Instagram API with Instagram Login).",
-  "engines": { "node": ">=20" },
-  "scripts": { "test": "node --test" }
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/playfair-display": "^5.3.0",
+    "opentype.js": "^2.0.0",
+    "sharp": "^0.35.5"
+  }
 }
