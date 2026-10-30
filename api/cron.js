@@ -27,7 +27,8 @@ export default async function handler(req, res) {
     const results = [];
     for (const card of list.items || []) {
       if (results.filter((r) => r.posted).length >= MAX_POSTS) break;
-      if (!card.name || posted.has(card.name.trim())) continue;
+      if (!card.name) { results.push({ slug: card.slug, skipped: 'product not found' }); continue; }
+      if (posted.has(card.name.trim())) { if (only) results.push({ slug: card.slug, skipped: 'already on Instagram' }); continue; }
       const { product } = await (await fetch(`${STORE_URL}/api/products/${card.slug}`)).json();
       if (!only && (!product?.createdAt || new Date(product.createdAt).getTime() < Math.max(cutoff, MIN_CREATED_AT))) continue;
       const imageUrls = (product.images || []).map((u) => (u.startsWith('http') ? u : `${STORE_URL}${u}`)).slice(0, 10);
