@@ -13,14 +13,18 @@ export default async function handler(req, res) {
   const userId = process.env.IG_USER_ID;
   if (!token || !userId) return res.status(500).json({ error: 'IG_ACCESS_TOKEN or IG_USER_ID is not set' });
 
-  const { slug, dryRun = false, force = false } = req.body || {};
+  const { slug, dryRun = false, force = false, product: given } = req.body || {};
   if (!slug || typeof slug !== 'string' || !/^[a-z0-9-]+$/.test(slug)) return res.status(400).json({ error: 'A valid product slug is required' });
 
   try {
-    const r = await fetch(`${STORE_URL}/api/products/${slug}`);
-    if (r.status === 404) return res.status(404).json({ error: 'Product not found' });
-    if (!r.ok) return res.status(502).json({ error: `Store returned ${r.status}` });
-    const { product } = await r.json();
+    // The store backend may send the product itself (so a product can be posted during its own deploy, before the live API has it).
+    let product = given && typeof given === 'object' && given.name ? given : null;
+    if (!product) {
+      const r = await fetch(`${STORE_URL}/api/products/${slug}`);
+      if (r.status === 404) return res.status(404).json({ error: 'Product not found' });
+      if (!r.ok) return res.status(502).json({ error: `Store returned ${r.status}` });
+      ({ product } = await r.json());
+    }
     const imageUrls = (product.images || []).map((u) => (u.startsWith('http') ? u : `${STORE_URL}${u}`)).slice(0, 10);
     if (!imageUrls.length) return res.status(422).json({ error: 'Product has no images' });
     const caption = buildCaption(product);
