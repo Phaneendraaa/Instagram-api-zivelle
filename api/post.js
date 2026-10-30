@@ -2,7 +2,7 @@
 // Reads the product from the Zivelle store, builds the caption, posts it to Instagram as a carousel.
 import { buildCaption } from '../lib/caption.js';
 import { publish, publishStory, recentCaptionHeads } from '../lib/instagram.js';
-import { signStory } from './story-image.js';
+import { signStory } from '../lib/story-sign.js';
 
 const STORE_URL = (process.env.STORE_URL || 'https://www.thezivelle.shop').replace(/\/$/, '');
 

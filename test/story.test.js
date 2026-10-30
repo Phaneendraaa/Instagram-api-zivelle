@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { signStory } from '../api/story-image.js';
+import { signStory } from '../lib/story-sign.js';
 import { rupees } from '../lib/story-card.js';
 
 test('story signature depends on every field', () => {

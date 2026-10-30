@@ -1,7 +1,4 @@
 {
-  "functions": {
-    "api/*.js": { "maxDuration": 60 },
-    "api/story-image.js": { "maxDuration": 30, "includeFiles": "fonts/**" }
-  },
+  "functions": { "api/*.js": { "maxDuration": 60, "includeFiles": "fonts/**" } },
   "crons": [{ "path": "/api/cron", "schedule": "30 5 * * *" }]
 }

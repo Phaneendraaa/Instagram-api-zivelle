@@ -1,11 +1,10 @@
 // GET /api/story-image?img=&name=&price=&old=&slug=&sig=  -> the story card JPEG that Instagram downloads.
 // The signature (HMAC of the fields with POST_SECRET) stops other people using this as a free image generator.
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { timingSafeEqual } from 'node:crypto';
+import { signStory } from '../lib/story-sign.js';
 import { renderStoryCard } from '../lib/story-card.js';
 
 const STORE_URL = (process.env.STORE_URL || 'https://www.thezivelle.shop').replace(/\/$/, '');
-
-export const signStory = (secret, f) => createHmac('sha256', secret).update([f.img, f.name, f.price, f.old || '', f.slug].join('|')).digest('hex');
 
 export default async function handler(req, res) {
   const secret = process.env.POST_SECRET;
