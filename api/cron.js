@@ -6,6 +6,8 @@ import { publish, recentCaptionHeads } from '../lib/instagram.js';
 const STORE_URL = (process.env.STORE_URL || 'https://www.thezivelle.shop').replace(/\/$/, '');
 const MAX_AGE_HOURS = Number(process.env.MAX_AGE_HOURS || 48);
 const MAX_POSTS = Number(process.env.MAX_POSTS_PER_RUN || 1);
+// Products added before this moment are never auto-posted (so turning the job on does not flood the feed).
+const MIN_CREATED_AT = new Date(process.env.MIN_CREATED_AT || '2026-10-30T06:10:00Z').getTime();
 
 export default async function handler(req, res) {
   const cron = process.env.CRON_SECRET;
@@ -16,15 +18,18 @@ export default async function handler(req, res) {
   const dryRun = req.query?.dryRun === '1';
 
   try {
-    const list = await (await fetch(`${STORE_URL}/api/products?newArrival=true&sort=newest&limit=12`)).json();
+    const only = typeof req.query?.slug === 'string' && /^[a-z0-9-]+$/.test(req.query.slug) ? req.query.slug : null;
+    const list = only
+      ? { items: [{ slug: only, name: ((await (await fetch(`${STORE_URL}/api/products/${only}`)).json()).product || {}).name || '' }] }
+      : await (await fetch(`${STORE_URL}/api/products?newArrival=true&sort=newest&limit=12`)).json();
     const posted = new Set((await recentCaptionHeads(userId, token)).map((m) => m.head));
     const cutoff = Date.now() - MAX_AGE_HOURS * 3600e3;
     const results = [];
     for (const card of list.items || []) {
       if (results.filter((r) => r.posted).length >= MAX_POSTS) break;
-      if (posted.has(card.name.trim())) continue;
+      if (!card.name || posted.has(card.name.trim())) continue;
       const { product } = await (await fetch(`${STORE_URL}/api/products/${card.slug}`)).json();
-      if (!product?.createdAt || new Date(product.createdAt).getTime() < cutoff) continue;
+      if (!only && (!product?.createdAt || new Date(product.createdAt).getTime() < Math.max(cutoff, MIN_CREATED_AT))) continue;
       const imageUrls = (product.images || []).map((u) => (u.startsWith('http') ? u : `${STORE_URL}${u}`)).slice(0, 10);
       if (!imageUrls.length) continue;
       const caption = buildCaption(product);
