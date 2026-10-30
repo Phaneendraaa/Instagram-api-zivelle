@@ -1,0 +1,9 @@
+{
+  "name": "instagram-api-zivelle",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Posts Zivelle products to Instagram as carousels (Instagram API with Instagram Login).",
+  "engines": { "node": ">=20" },
+  "scripts": { "test": "node --test" }
+}
