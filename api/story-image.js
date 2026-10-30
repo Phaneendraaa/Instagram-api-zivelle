@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   if (want.length !== got.length || !timingSafeEqual(want, got)) return res.status(401).end('bad signature');
   if (!/^https:\/\//.test(q.img)) return res.status(400).end('bad image');
   try {
-    const jpg = await renderStoryCard({ imageUrl: q.img, name: q.name, price: Number(q.price), compareAt: q.old ? Number(q.old) : 0, url: `${STORE_URL}/product/${q.slug}` });
+    const jpg = await renderStoryCard({ imageUrl: q.img, name: q.name, price: Number(q.price), compareAt: q.old ? Number(q.old) : 0, style: Number(q.style) || 0 });
     res.setHeader('Content-Type', 'image/jpeg');
     res.setHeader('Cache-Control', 'public, max-age=3600');
     return res.status(200).send(jpg);

@@ -3,6 +3,7 @@
 import { buildCaption } from '../lib/caption.js';
 import { publish, publishStory, recentCaptionHeads } from '../lib/instagram.js';
 import { signStory } from '../lib/story-sign.js';
+import { STORY_STYLES } from '../lib/story-sign.js';
 
 const STORE_URL = (process.env.STORE_URL || 'https://www.thezivelle.shop').replace(/\/$/, '');
 
@@ -14,7 +15,7 @@ export default async function handler(req, res) {
   const userId = process.env.IG_USER_ID;
   if (!token || !userId) return res.status(500).json({ error: 'IG_ACCESS_TOKEN or IG_USER_ID is not set' });
 
-  const { slug, dryRun = false, force = false, noStory = false, storyOnly = false, product: given } = req.body || {};
+  const { slug, dryRun = false, force = false, noStory = false, storyOnly = false, storyStyle, product: given } = req.body || {};
   if (!slug || typeof slug !== 'string' || !/^[a-z0-9-]+$/.test(slug)) return res.status(400).json({ error: 'A valid product slug is required' });
 
   try {
@@ -43,9 +44,9 @@ export default async function handler(req, res) {
     let story = null;
     if (!noStory && product.price) {
       try {
-        const f = { img: imageUrls[0], name: product.name.trim(), price: String(product.price), old: product.compareAtPrice && product.compareAtPrice > product.price ? String(product.compareAtPrice) : '', slug };
+        const f = { img: imageUrls[0], name: product.name.trim(), price: String(product.price), old: product.compareAtPrice && product.compareAtPrice > product.price ? String(product.compareAtPrice) : '', slug, style: String(Number.isInteger(storyStyle) ? storyStyle % STORY_STYLES : [...slug].reduce((a, c) => a + c.charCodeAt(0), 0) % STORY_STYLES) };
         const origin = process.env.PUBLIC_URL || `https://${req.headers.host}`;
-        const qs = new URLSearchParams({ img: f.img, name: f.name, price: f.price, slug, ...(f.old ? { old: f.old } : {}), sig: signStory(secret, f) });
+        const qs = new URLSearchParams({ img: f.img, name: f.name, price: f.price, slug, style: f.style, ...(f.old ? { old: f.old } : {}), sig: signStory(secret, f) });
         story = await publishStory({ userId, token, imageUrl: `${origin}/api/story-image?${qs}` });
       } catch (e) {
         story = { error: e.message };
